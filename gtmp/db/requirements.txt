@@ -1,0 +1,4 @@
+redis
+PyMySQL
+git+https://github.com/esnme/ultramysql.git
+git+https://github.com/hongqn/umysqldb.git

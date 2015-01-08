@@ -207,52 +207,52 @@ API服务器
             "wearing": # 穿着的
             [ 
                 {
-                    "id":0,
-                    "type":"top" # 上衣
+                    "id":1,
+                    "type":11 # 上衣
                 },
                 {
                     "id":1,
-                    "type":"skirt" # 裙子
+                    "type":8 # 裙子
                 },
                 {
-                    "id":2,
-                    "type":"pants" # 裤子
+                    "id":1,
+                    "type":7 # 裤子
                 },
                 {
-                    "id":3,
-                    "type":"bag" # 包包
+                    "id":1,
+                    "type":12 # 包包
                 },
                 {
-                    "id":4,
-                    "type":"hair" # 发型
+                    "id":1,
+                    "type":6 # 发型
                 },
                 {
-                    "id":5,
-                    "type":"shoes" # 鞋子
+                    "id":1,
+                    "type":10 # 鞋子
                 },
                 {
-                    "id":6,
-                    "type":"eardrop" # 耳饰
+                    "id":1,
+                    "type":1 # 耳饰
                 },
                 {
-                    "id":7,
-                    "type":"nechlace" # 颈饰
+                    "id":1,
+                    "type":2 # 颈饰
                 },
                 {
-                    "id":8,
-                    "type":"bracelet" # 手饰
+                    "id":1,
+                    "type":3 # 手饰
                 },
                 {
-                    "id":9,
-                    "type":"leglet" # 腿饰
+                    "id":1,
+                    "type":9 # 腿饰
                 },
                 {
-                    "id":10,
-                    "type":"topknot" # 头饰
+                    "id":1,
+                    "type":4 # 头饰
                 },
                 {
-                    "id":11,
-                    "type":"makeup" # 化妆
+                    "id":1,
+                    "type":5 # 化妆
                 }
             ],
             "backpack": # 背包(里面不包含身上穿着的)
@@ -269,7 +269,9 @@ API服务器
 		REQ:
 		{
 			"src_id":uint32, 
-			"dst_id":uint32
+            "src_type":uint32,
+			"dst_id":uint32,
+			"dst_type":uint32
 		}
 		
 		RESP:
@@ -286,7 +288,9 @@ API服务器
 		{
             [
     			"src_id":uint32, 
-    			"dst_id":uint32
+                "src_type":uint32,
+    			"dst_id":uint32,
+    			"dst_type":uint32
             ]
             ....
 		}

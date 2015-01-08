@@ -1,0 +1,36 @@
+{
+    "GATE": {
+        "host": "0.0.0.0",
+        "port": 6011,
+        "appid": "gate1",
+        "appkey": "gate1"
+    },
+    "RPC": {
+        "host": "127.0.0.1",
+        "port": 6021,
+        "n": 20,
+        "reconnect_delay": 5
+    },
+    "MYSQL": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "fk",
+        "passwd": "123456",
+        "db": "ggame",
+
+        "n": 20,
+        "reconnect_delay": 5
+    },
+    "HUB": {
+        "host": "127.0.0.1",
+        "port": 6031
+    },
+
+    "CODEC": {
+        "packet_n": 4,
+        "serialize": "json",
+        "encrypt_flag": 1,
+        "compress_flag": 0
+    },
+    "description": "GATE: 网关服务器配置,appid和appkey用于连接hub服务器的认证; CODEC: 编解码配置,其中serialize为json/msgpack"
+}

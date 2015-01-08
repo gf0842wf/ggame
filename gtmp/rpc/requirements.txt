@@ -1,0 +1,2 @@
+gsocketpool
+git+https://github.com/gf0842wf/mprpc.git
