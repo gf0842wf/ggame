@@ -277,3 +277,22 @@ API服务器
 			"code":0
 		}
 
+- 批量换装
+
+		METHOD: POST
+		URL: /cosplays
+
+		REQ:
+		{
+            [
+    			"src_id":uint32, 
+    			"dst_id":uint32
+            ]
+            ....
+		}
+		
+		RESP:
+		{
+			"code":0
+		}
+
