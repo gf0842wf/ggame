@@ -23,7 +23,7 @@ import pymongo
 
 client = Client()
 
-'''添加mysql,rpc,mongo的client
+'''
 myconf = deepcopy(settings['MYSQL'])
 # myconf.update({'autocommit':False}) # 默认autocommit为True,当使用事务时,使用query('SET AUTOCOMMIT=0')临时关闭自动提交
 n = myconf.pop('n')
@@ -40,6 +40,7 @@ mprpcpool = MPRPCClient(gpool)
  
 client.add_client('rpc_client', mprpcpool)
 # client['rpc_client'].call
+'''
 
 monconf = deepcopy(settings['MONGO'])
 db = monconf.pop('db')
@@ -48,5 +49,4 @@ mondb = pymongo.MongoClient(use_greenlets=True, **monconf)[db]  # 这里有个�
 
 client.add_client('mongo_client', mondb)
 # client['mongo_client'].find_one
-'''
 
