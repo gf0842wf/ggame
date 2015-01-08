@@ -43,7 +43,6 @@ def initialize():
     logging.basicConfig(level=loglevel, format=log_format)
 
 def run():
-    # 在load配置文件后才能导入root
     # 先启动(导入)client,后启动service
     from gateserver.client import client
     client.start()
