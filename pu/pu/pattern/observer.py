@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 class Observable(object):
     '''观察者模式
     为了，简化接口，约定观察者为函数。
