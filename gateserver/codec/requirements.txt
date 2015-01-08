@@ -1,2 +1,2 @@
-ujson
+git+https://github.com/esnme/ultrajson.git
 msgpack-python
