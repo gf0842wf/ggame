@@ -12,7 +12,7 @@ from gateserver.path import HOME_DIR
 
 
 # 分析参数
-ARGS = argparse.ArgumentParser(description='web server')
+ARGS = argparse.ArgumentParser(description='gate server')
 
 # ARGS.add_argument(
 #     '--port', '-p', action='store', dest='port',
