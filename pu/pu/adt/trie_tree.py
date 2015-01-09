@@ -55,11 +55,9 @@ class TrieCheck(object):
             node = self._root
             index = i
             node = node.get_child(ch)
-            path = []
             while node is not None:
                 if node.is_end():
-                    path.append(text[i:index+1])
-                    yield (i, ''.join(path))
+                    yield (i, ''.join(text[i:index+1]))
                 if len(text) == index + 1:
                     break
                 index += 1
