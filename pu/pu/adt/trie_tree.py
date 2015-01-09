@@ -4,22 +4,7 @@
 import codecs
 
 
-class Check(object):
-    
-    def __init__(self):
-        pass
-
-    def add_word(self, text):
-        pass
-
-    def get_bad_word(self, text, offset=0):
-        pass
-
-    def replace_bad_word(self, text, offset=0, mark='*'):
-        pass
-
-
-class TrieNode(Check):
+class TrieNode(object):
     
     def __init__(self, value=None):
         self._end = False
@@ -72,15 +57,14 @@ class TrieCheck(object):
             node = node.get_child(ch)
             path = []
             while node is not None:
-                path.append(text[index])
                 if node.is_end():
-                    return i, ''.join(path)
+                    path.append(text[i:index+1])
+                    yield (i, ''.join(path))
                 if len(text) == index + 1:
                     break
                 index += 1
                 node = node.get_child(text[index])
             i += 1
-        return -1, None
 
     def replace_bad_word(self, text, offset=0, mark='*'):
         if not isinstance(text, str) or offset >= len(text):
@@ -94,8 +78,7 @@ class TrieCheck(object):
             node = node.get_child(ch)
             while node is not None:
                 if node.is_end():
-                    print 'sensitive word:', ''.join(li[i:index + 1])
-                    for m in range(i, index + 1):
+                    for m in xrange(i, index + 1):
                         li[m] = mark
                     break
                 if len(text) == index + 1:
@@ -118,7 +101,8 @@ def load(path, checker):
 def main():
     check = TrieCheck()
     load('sensitive.txt', check)
-    print check.replace_bad_word('反对一切博彩和色情游戏。')
+    print list(check.get_bad_word('反对一切血腥和色情游戏。'))
+    print check.replace_bad_word('反对一切血腥和色情游戏。')
 
 if __name__ == '__main__':
     main()
