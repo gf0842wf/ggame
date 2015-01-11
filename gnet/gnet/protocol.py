@@ -13,7 +13,7 @@ import gevent.server
 
 import sys
 import gevent.pywsgi
-# import geventwebsocket.handler
+import geventwebsocket.handler
 
 from .util import shorten
 
@@ -44,7 +44,7 @@ class FactoryException(Exception):
 class Protocol(gevent.Greenlet):
 
     recv_buf_size = 256
-    read_deadline = 0 # 心跳超时: 0-不超时
+    read_deadline = 0  # 心跳超时: 0-不超时
     
     id_generator = id_generator()
     transport = None
@@ -275,10 +275,52 @@ class ReconnectingClientFactory(gevent.Greenlet):
         p.start()
 
 
+class HookLogWSGIHandler(gevent.pywsgi.WSGIHandler):
+    
+    def log_request(self):
+        logger.debug(self.format_request())
+            
+    def format_request(self):
+        length = self.response_length or '-'
+        if self.time_finish:
+            delta = '%.6f' % (self.time_finish - self.time_start)
+        else:
+            delta = '-'
+        # TODO: 如果使用nginx反向代理,需要根据nginx配置修改client_address为真是ip
+        client_address = self.client_address[0] if isinstance(self.client_address, tuple) else self.client_address
+        return '%s - - "%s" %s %s %s' % (
+            client_address or '-',
+            getattr(self, 'requestline', ''),
+            (getattr(self, 'status', None) or '000').split()[0],
+            length,
+            delta)
+        
+        
+class HookLogWSHandler(geventwebsocket.handler.WebSocketHandler):
+    
+    def log_request(self):
+        logger.debug(self.format_request())
+            
+    def format_request(self):
+        length = self.response_length or '-'
+        if self.time_finish:
+            delta = '%.6f' % (self.time_finish - self.time_start)
+        else:
+            delta = '-'
+        # TODO: 如果使用nginx反向代理,需要根据nginx配置修改client_address为真是ip
+        client_address = self.client_address[0] if isinstance(self.client_address, tuple) else self.client_address
+        return '%s - - "%s" %s %s %s' % (
+            client_address or '-',
+            getattr(self, 'requestline', ''),
+            (getattr(self, 'status', None) or '000').split()[0],
+            length,
+            delta)
+        
+    
 class WSGIServerFactory(gevent.Greenlet):
     # handler_class = geventwebsocket.handler.WebSocketHandler 支持websocket的wsgi handler
     
-    def __init__(self, addr, app=None, handler_class=gevent.pywsgi.WSGIHandler, log=sys.stderr):
+    def __init__(self, addr, app=None, handler_class=HookLogWSGIHandler, log=sys.stderr):
         self.addr = addr
         self.app = app or self._app
         self.log = log

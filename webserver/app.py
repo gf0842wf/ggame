@@ -39,8 +39,8 @@ def authorize(db):
                 return json.dumps({'code': 1, 'msg': 'username&password error or auth expire'})
             user = db.user.find_one({'_id':ObjectId(uid), 'password':password}, {'_id':1})
             if not user:
-                bottle.response.delete_cookie("u")
-                bottle.response.delete_cookie("p")
+                bottle.response.delete_cookie("u", path='/')
+                bottle.response.delete_cookie("p", path='/')
                 return json.dumps({'code': 1, 'msg': 'username&password error or auth expire'})
         #                 return bottle.redirect('/api/v1/game/login')
             return fn(*args, **kw)
@@ -116,10 +116,15 @@ def login():
                                       update={"$set":{"login_date":now_date()}},
                                       new=False,
                                       fields={'_id':1})
-    if not user:
-        return json.dumps({'code': 1, 'msg': 'username&password error or auth expires'})
-    uid = str(user['_id'])
+    
     secret = settings['API']['secret']
+    
+    if not user:
+        bottle.response.delete_cookie("u", path='/')
+        bottle.response.delete_cookie("p", path='/')
+        return json.dumps({'code': 1, 'msg': 'username&password error or auth expires'})
+    
+    uid = str(user['_id'])
     bottle.response.set_cookie('u', uid, secret=secret, path='/', max_age=3600 * 24 * 5)
     bottle.response.set_cookie('p', password, secret=secret, path='/', max_age=3600 * 24 * 5)
     return json.dumps({'code': 0, 'uid': uid})
@@ -175,6 +180,7 @@ def get_upload_image():
 @app.route('/api/v1/game/upload/image', method='POST')
 @authorize(mondb)
 def post_upload_image():
+    bottle.response.set_header('Content-Type', 'application/json; charset=UTF-8')
     upfile = bottle.request.files.get('name')
     if upfile:
         suffix = 'static/img/%s' % upfile.filename
