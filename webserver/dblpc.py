@@ -15,6 +15,7 @@ class MyDBLPC(object):
     '''写封装sql的方法
     : TODO: 加redis缓存/内存缓存
     : TODO: 把事务封装成装饰器
+    : TODO: 封装出一个user,活跃user常驻内存(或redis),以user为主体设计方法
     '''
     
     def __init__(self, db):
@@ -32,15 +33,14 @@ class MyDBLPC(object):
         '''
         return self._db.fetchone('select unix_timestamp() as now')['now']
     
-    def get_user(self, where, fields=None):
+    def get_user(self, where, fields='*'):
         ''' 通过where获得1个 user
         @param where: where条件串  eg. "uid='fk' and password='1234'" 
         @param fields: 返回的字段串 eg. "id as uid, username"   "*"
         @return: user字典
         '''
-        fields = fields or '*'
         sql = 'select %s from user where %s' % (fields, where)
-        if 'None' in sql: return
+        if 'None' in sql: return  # 这里设定where语句里面不能有None
         return self._db.fetchone(sql)
     
     def upsert_user(self, options):
@@ -62,6 +62,7 @@ class MyDBLPC(object):
         q.put(2)
         q.put(3)
         :只要中间没有sleep啥的就是原子的
+        :使用事务时必须指定 qid
         '''
         self._db.execute('START TRANSACTION', qid=0)
         self._db.query('SET AUTOCOMMIT=0', qid=0)
@@ -72,7 +73,7 @@ class MyDBLPC(object):
         
         
 class MonDBLPC(object):
-    '''写封装mongodb的方法,仅限于复杂的方法
+    '''写封装mongodb的方法,仅限于复杂的方法,简单操作可以直接用mongo_client操作
     : TODO: 用日志代替事务
     '''
     
