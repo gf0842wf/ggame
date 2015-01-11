@@ -76,11 +76,25 @@ def index():
 
 @app.route('/ws', apply=[websocket], method='GET')
 def echo(ws):
-    while True:
-        msg = ws.receive()
-        if msg: 
-            logger.debug('ws msg: %s', shorten(msg, 32))
-            ws.send(msg)
+    if not ws:
+        logger.warn('not websocket connection')
+        return
+    
+    logger.info('websocket connection made')
+    
+    try:
+        while True:
+            msg = ws.receive()
+            if msg: 
+                logger.debug('ws msg: %s', shorten(msg, 32))
+                ws.send(msg)
+            else:
+                logger.info('websocket not msg')
+                break
+        logger.info('websocket connection lost')
+        ws.close()
+    except:
+        logger.warn('websocket connection lost except', exc_info=1)
             
 @app.route('/api/v1/game/register', method='POST')
 def register():
