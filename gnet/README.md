@@ -90,9 +90,8 @@ sample wsgi server
     # pip install -U gevent-websocket
     # pip install -U bottle-websocket
 
-	from gnet.protocol import WSGIServerFactory
+	from gnet.protocol import WSGIServerFactory, HookLogWSHandler
 	from bottle.ext.websocket import websocket
-	import geventwebsocket.handler
 	import gevent
 	import bottle
 	import logging
@@ -112,7 +111,7 @@ sample wsgi server
 	        msg = ws.receive()
 	        if msg: ws.send(msg)
 	
-	site = WSGIServerFactory(('0.0.0.0', 6001), app=app, handler_class = geventwebsocket.handler.WebSocketHandler)
+	site = WSGIServerFactory(('0.0.0.0', 6001), app=app, handler_class=HookLogWSHandler)
 	site.start()
 
 	gevent.wait()
