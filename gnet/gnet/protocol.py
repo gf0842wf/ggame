@@ -11,7 +11,6 @@ import gevent.queue
 import gevent.socket
 import gevent.server
 
-import sys
 import gevent.pywsgi
 import geventwebsocket.handler
 
@@ -297,6 +296,7 @@ class HookLogWSGIHandler(gevent.pywsgi.WSGIHandler):
         
         
 class HookLogWSHandler(geventwebsocket.handler.WebSocketHandler):
+    # geventwebsocket.handler.WebSocketHandler 支持websocket的wsgi handler
     
     def log_request(self):
         logger.debug(self.format_request())
@@ -318,12 +318,10 @@ class HookLogWSHandler(geventwebsocket.handler.WebSocketHandler):
         
     
 class WSGIServerFactory(gevent.Greenlet):
-    # handler_class = geventwebsocket.handler.WebSocketHandler 支持websocket的wsgi handler
     
-    def __init__(self, addr, app=None, handler_class=HookLogWSGIHandler, log=sys.stderr):
+    def __init__(self, addr, app=None, handler_class=HookLogWSGIHandler):
         self.addr = addr
         self.app = app or self._app
-        self.log = log
         self.handler_class = handler_class
         gevent.Greenlet.__init__(self)
         
@@ -338,8 +336,7 @@ class WSGIServerFactory(gevent.Greenlet):
     def _run(self):
         server = gevent.pywsgi.WSGIServer(self.addr,
                                           self.app,
-                                          handler_class=self.handler_class,
-                                          log=self.log)
-        logger.info('wsgi&ws server listen @ %s', str(self.addr))
+                                          handler_class=self.handler_class)
+        logger.info('wsgi(ws) server listen @ %s', str(self.addr))
         server.serve_forever()
         
