@@ -107,15 +107,15 @@
         pip install cython
         pip install -r requirements-taihe-test.txt
 
-        # 配置webserver监听端口、游戏允许最大人数(为了测试方便,默认时2)、mongodb数据库等
-        默认使用配置见 /webserver/etc/web/taihe_test.json
+        # 配置webserver监听端口、游戏允许最大人数(为了测试方便,默认是2)、mongodb数据库等
+        默认使用配置见 ggame/webserver/etc/web/taihe_test.json
 
-        # 安装自定义包安装
+        # 自定义包安装
 
-        # 进入ggame/pu目录
+        # 进入ggame/pu目录, 安装pu
         python setup.py install
         
-        # 进入ggame/gnet目录
+        # 进入ggame/gnet目录, 安装gnet
         python setup.py install
 
         # 导入测试用户(进入dbdump.py可以看到测试账户)
@@ -138,7 +138,7 @@
         1.使用 dbdump.py 里面的账户登录
         2.排队中的用户可以关闭浏览器来表示退出排队
         3.进入游戏的用户可以在浏览器打开 http://127.0.0.1:6001/api/v1/game/offline/<uid> 来让某个uid下线 (uid在登陆成功后有返回)
-        4.可以在一台机子上用多个浏览器来进行测试(默认部署的是127.0.0.1, 如果想多台机子测试需要把 tpl/index.tpl文件的ws的ip改为服务器ip, 测试时也要把127.0.0.1改为相应的服务器ip)
+        4.可以在一台机子上用多个浏览器来进行测试(默认部署的是127.0.0.1, 如果想多台机子测试需要把 ggame/webserver/tpl/index.tpl文件的ws的ip改为服务器ip, 测试时也要把127.0.0.1改为相应的服务器ip)
 
         
 优化/说明
@@ -147,5 +147,5 @@
 1. 核心部分(gnet)采用的是gevent框架, io性能较高, web框架选用的是bottle, 结构简单, 和gevent配合性能较高
 2. 排队部分这里采用websocket长连接, 可用nginx代理扩展性能
 3. 用户在线列表和排队列表应该是全局的(可用redis队列)
-4. 对于并发量,在普通阿里云机器上面测试单进程有4000qps/s,并发可以可以使用nginx扩展
+4. 对于并发量,在普通阿里云机器上面测试单进程有4000qps,并发可以可以使用nginx扩展
 5. 依赖包安装较为复杂,暂时未写成一键安装形式
