@@ -1,0 +1,18 @@
+{
+    "WEB": {
+        "host": "0.0.0.0",
+        "port": 6001
+    },
+    "MONGO": {
+        "host": "localhost",
+        "port": 27017,
+        "db": "ggame"
+    },
+
+    "CHECK": {},
+    "API": {
+        "root": "http://127.0.0.1:6001/",
+        "secret": "ea63e25e386528202ad38318910ee12d"
+    },
+    "description": "CHECK: 排队登陆服务器配置. API: API服务器配置"
+}
