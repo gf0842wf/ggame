@@ -1,0 +1,10 @@
+gevent
+git+https://github.com/esnme/ultrajson.git
+git+https://github.com/esnme/ultramysql.git
+git+https://github.com/gf0842wf/mprpc.git
+git+https://github.com/liris/websocket-client.git
+bottle
+gevent-websocket
+bottle-websocket
+pymongo
+requests

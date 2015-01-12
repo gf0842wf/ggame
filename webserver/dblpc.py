@@ -4,6 +4,9 @@
 : 暂时不打算使用orm (以后会考虑gevent+ponyorm+pymysql)
 '''
 from gnet.client import Client  # Client是单例模式, 在__main__中已经初始化了
+from collections import OrderedDict
+from .settings import settings
+import gevent
 import logging
 
 logger = logging.getLogger(__name__)
@@ -76,9 +79,66 @@ class MonDBLPC(object):
     '''写封装mongodb的方法,仅限于复杂的方法,简单操作可以直接用mongo_client操作
     : TODO: 用日志代替事务
     '''
+    _queue_users = OrderedDict()  # 排队用户列表
+    _users = {}  # 游戏中用户列表
     
     def __init__(self, db):
         self._db = db
+        self.check_task = gevent.spawn(self.check_enter)
+    
+    def try_enter(self, uid, ws):
+        '''尝试进入游戏'''
+        if len(self._users) < settings['CHECK']['max_user']:
+            self._users[uid] = ws
+            ws.send(u'%s 进入游戏' % uid)
+            ws.send(u'所有在线用户的id:%s' % self._users.keys())
+            ws.close()
+        else:
+            ws.send(u'所有在线用户的id:%s' % self._users.keys())
+            ws.send(u'排队中,前面有 %s 个用户在排队(不包括自己)' % self.queue_count)
+            self._queue_users[uid] = ws
+            
+    def leave_game(self, uid):
+        '''游戏中用户离开'''
+        return self._users.pop(uid, None)
+        
+    def leave_queue(self, uid):
+        '''排队中用户离开'''
+        return self._queue_users.pop('uid', None)
+    
+    def leave(self, uid):
+        if uid in self._users:
+            self.leave_game(uid)
+        elif uid in self._queue_users:
+            self.leave_queue(uid)
+        
+    @property
+    def user_count(self):
+        return len(self._users)
+    
+    @property
+    def queue_count(self):
+        return len(self._queue_users)
+    
+    def check_enter(self):
+        '''定时检查排队用户,是否可进游戏'''
+        while True:
+            if len(self._users) < settings['CHECK']['max_user'] and len(self._queue_users) > 0:
+                try:
+                    uid, ws = self._queue_users.popitem(last=False)
+                    self._users[uid] = ws
+                    ws.send(u'%s 进入游戏' % uid)
+                    ws.close()
+                except KeyError:
+                    pass
+            
+            for ws in self._queue_users.values():
+                ws.send(u'排队中,前面有 %s 个用户在排队(不包括自己)' % (self.queue_count - 1))
+                
+            logger.info('users:%s' % self._users.keys())
+            logger.info('queue users:%s' % self._queue_users.keys())
+                       
+            gevent.sleep(2)
         
 
 # mylpc = MyDBLPC(client['mysql_client'])

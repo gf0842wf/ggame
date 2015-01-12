@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from bottle.ext.websocket import websocket
-# from bottle import redirect, request, response, static_file
 import bottle
 import logging
 import os
@@ -10,7 +9,6 @@ import ujson as json
 from bson import ObjectId
 from functools import wraps
 
-from pu.util import shorten
 from .settings import settings
 from .path import HOME_DIR
 from .dblpc import monlpc
@@ -27,7 +25,7 @@ app = bottle.Bottle()
 now_date = lambda: time.strftime("%Y-%m-%d %X")
 now = lambda: int(time.time())
 
-# # authorize 装饰器
+# authorize 装饰器
 def authorize(db):
     def _wrapper(fn):
         @wraps(fn)
@@ -36,13 +34,12 @@ def authorize(db):
             uid = bottle.request.get_cookie('u', secret=secret)
             password = bottle.request.get_cookie('p', secret=secret)
             if not uid or not password:
-                return json.dumps({'code': 1, 'msg': 'username&password error or auth expire'})
+                return bottle.redirect('/api/v1/game/login')
             user = db.user.find_one({'_id':ObjectId(uid), 'password':password}, {'_id':1})
             if not user:
                 bottle.response.delete_cookie("u", path='/')
                 bottle.response.delete_cookie("p", path='/')
-                return json.dumps({'code': 1, 'msg': 'username&password error or auth expire'})
-        #                 return bottle.redirect('/api/v1/game/login')
+                return bottle.redirect('/api/v1/game/login')
             return fn(*args, **kw)
         return __wrapper
     return _wrapper
@@ -72,29 +69,38 @@ def error500(error):
 @app.route('/', method='GET')
 @authorize(mondb)
 def index():
-    return 'hello, world!'
+    return bottle.template(HOME_DIR + '/tpl/index.tpl')
 
-@app.route('/ws', apply=[websocket], method='GET')
-def echo(ws):
+@app.route('/api/v1/game/ws/check', apply=[websocket], method='GET')
+@authorize(mondb)  # 认证对ws同样有效,因为ws要先http握手
+def check(ws):
+    '''gate分配/排队'''
     if not ws:
         logger.warn('not websocket connection')
         return
     
     logger.info('websocket connection made')
     
+    _user = get_user()
+    uid = str(_user['_id'])
+    monlpc.try_enter(uid, ws)
+    
     try:
         while True:
-            msg = ws.receive()
-            if msg: 
-                logger.debug('ws msg: %s', shorten(msg, 32))
-                ws.send(msg)
+            data = ws.receive()
+            if data:
+                pass
             else:
                 logger.info('websocket not msg')
                 break
+            
+        monlpc.leave(uid)
         logger.info('websocket connection lost')
         ws.close()
+        
     except:
-        logger.warn('websocket connection lost except', exc_info=1)
+        monlpc.leave_queue(uid)
+        logger.warn('websocket connection lost except')
             
 @app.route('/api/v1/game/register', method='POST')
 def register():
@@ -113,17 +119,34 @@ def register():
         options = {'username':username, 'password':password, 'nickname':nickname, 'create_date':now_date()}
         oid = mondb.user.insert(options)
     except:
-        # TODO: rollback
         logger.error('register user error: %s', username, exc_info=1)
         return json.dumps({'code': 99, 'msg': 'unknown error'})
     
     uid = str(oid)
     return json.dumps({'code': 0, 'uid': uid})
 
+@app.route('/api/v1/game/login', method='GET')
+def get_login():
+    html = '''\
+    <html xmlns='http://www.w3.org/1999/xhtml'> 
+    <head> 
+    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/> 
+    <title>Login</title>
+    </head>
+    <body>
+    <p><h1>Login</h1></p>
+    <form action="/api/v1/game/login" method="POST">
+      <p>username: <input type="text" name="username" /></p>
+      <p>password: <input type="password" name="password" /></p>
+      <input type="submit" value="Submit" />
+    </form>
+    '''
+    return html
+
 @app.route('/api/v1/game/login', method='POST')
-def login():
+def post_login():
     bottle.response.set_header('Content-Type', 'application/json; charset=UTF-8')
-    req = bottle.request.json  # json.loads(bottle.request.body.getvalue())
+    req = bottle.request.forms  # req = bottle.request.json  # json.loads(bottle.request.body.getvalue())
     username = req['username']
     password = req['password']
     user = mondb.user.find_and_modify(query={"username":username, "password":password},
@@ -141,7 +164,7 @@ def login():
     uid = str(user['_id'])
     bottle.response.set_cookie('u', uid, secret=secret, path='/', max_age=3600 * 24 * 5)
     bottle.response.set_cookie('p', password, secret=secret, path='/', max_age=3600 * 24 * 5)
-    return json.dumps({'code': 0, 'uid': uid})
+    bottle.redirect('/')
 
 @app.route('/api/v1/game/logout', method='POST')
 def logout():
@@ -150,12 +173,18 @@ def logout():
     bottle.response.delete_cookie('p', path='/')
     return json.dumps({'code': 0})
 
+@app.route('/api/v1/game/offline/<uid>', method='GET')
+def offline(uid):
+    if monlpc.leave_game(uid) is None:
+        return u'无此用户'
+    
+    return u'%s 被下线' % uid
+    
 @app.route('/api/v1/game/fitting', method='GET')
 @authorize(mondb)
 def fitting():
     bottle.response.set_header('Content-Type', 'application/json; charset=UTF-8')
     _user = get_user()
-#     _user.update({'backpack.wearing':1})
     user = mondb.user.find_one(_user, {'backpack.id':1, 'backpack.type':1, 'backpack.wearing':1})
     backpack = user['backpack']
     user['wearing'] = []
@@ -206,7 +235,14 @@ def post_upload_image():
     return json.dumps({'code':0, 'md5':md5, 'image':settings['API']['root'] + suffix, 'thumb':''})
 
 @app.route('/static/img/<filename>', method='GET')
-# @authorize(mondb)
+@authorize(mondb)
 def serve_img(filename):
     p = os.path.join(HOME_DIR, 'static/img')
     return bottle.static_file(filename, root=p)
+
+@app.route('/static/js/<filename>', method='GET')
+@authorize(mondb)
+def serve_js(filename):
+    p = os.path.join(HOME_DIR, 'static/js')
+    return bottle.static_file(filename, root=p)
+

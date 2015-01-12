@@ -9,7 +9,9 @@
         "db": "ggame"
     },
 
-    "CHECK": {},
+    "CHECK": {
+        "max_user": 2
+    },
     "API": {
         "root": "http://127.0.0.1:6001/",
         "secret": "ea63e25e386528202ad38318910ee12d"
