@@ -104,7 +104,7 @@ class MonDBLPC(object):
         
     def leave_queue(self, uid):
         '''排队中用户离开'''
-        return self._queue_users.pop('uid', None)
+        return self._queue_users.pop(uid, None)
     
     def leave(self, uid):
         if uid in self._users:
@@ -135,8 +135,8 @@ class MonDBLPC(object):
             for ws in self._queue_users.values():
                 ws.send(u'排队中,前面有 %s 个用户在排队(不包括自己)' % (self.queue_count - 1))
                 
-            logger.info('users:%s' % self._users.keys())
-            logger.info('queue users:%s' % self._queue_users.keys())
+            logger.debug('users:%s' % self._users.keys())
+            logger.debug('queue users:%s' % self._queue_users.keys())
                        
             gevent.sleep(2)
         

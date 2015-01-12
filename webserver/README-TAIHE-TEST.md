@@ -100,13 +100,11 @@
         # 下载项目
         git clone https://github.com/gf0842wf/ggame.git
 
-        # 进入ggame目录
-        cd ggame
-
-        # 切换到 taihe-test 分支
+        # 进入ggame目录,切换到 taihe-test 分支
         git checkout taihe-test
         
-        # 安装依赖包
+        # 进入ggame/webserver,安装依赖包
+        pip install cython
         pip install -r requirements-taihe-test.txt
 
         # 配置webserver监听端口、游戏允许最大人数(为了测试方便,默认时2)、mongodb数据库等

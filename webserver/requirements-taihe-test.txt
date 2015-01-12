@@ -7,4 +7,3 @@ bottle
 gevent-websocket
 bottle-websocket
 pymongo
-requests
