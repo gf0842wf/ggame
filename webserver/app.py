@@ -69,9 +69,9 @@ def error500(error):
 @app.route('/', method='GET')
 @authorize(mondb)
 def index():
-    return bottle.template(HOME_DIR + '/tpl/index.tpl')
+    return open(HOME_DIR + '/tpl/index.tpl').read()
 
-@app.route('/api/v1/game/ws/check', apply=[websocket], method='GET')
+@app.route('/api/v1/game/ws/check', apply=[websocket])
 @authorize(mondb)  # 认证对ws同样有效,因为ws要先http握手
 def check(ws):
     '''gate分配/排队'''
@@ -149,6 +149,7 @@ def post_login():
     req = bottle.request.forms  # req = bottle.request.json  # json.loads(bottle.request.body.getvalue())
     username = req['username']
     password = req['password']
+    byapi = req.get('byapi')
     user = mondb.user.find_and_modify(query={"username":username, "password":password},
                                       update={"$set":{"login_date":now_date()}},
                                       new=False,
@@ -164,7 +165,10 @@ def post_login():
     uid = str(user['_id'])
     bottle.response.set_cookie('u', uid, secret=secret, path='/', max_age=3600 * 24 * 5)
     bottle.response.set_cookie('p', password, secret=secret, path='/', max_age=3600 * 24 * 5)
-    bottle.redirect('/')
+    if byapi:
+        return json.dumps({'code': 0, 'uid': uid})
+    else:
+        bottle.redirect('/')
 
 @app.route('/api/v1/game/logout', method='POST')
 def logout():
