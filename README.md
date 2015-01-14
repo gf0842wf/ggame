@@ -1,4 +1,4 @@
-# 简单的gevent 游戏服务器
+# gevent 游戏服务器
 
 目前webserver目录结构较为完整,其他server参照webserver  
 
