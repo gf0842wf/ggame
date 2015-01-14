@@ -19,6 +19,7 @@ mondb = Client()['mongo_client']
 logger = logging.getLogger(__name__)
 
 bottle.debug(True)
+bottle.TEMPLATE_PATH.append(os.path.join(HOME_DIR, 'tpl'))
 
 app = bottle.Bottle()
 
@@ -69,7 +70,7 @@ def error500(error):
 @app.route('/', method='GET')
 @authorize(mondb)
 def index():
-    return open(HOME_DIR + '/tpl/index.tpl').read()
+    return bottle.template('index')  # open(HOME_DIR + '/tpl/index.tpl').read()
 
 @app.route('/api/v1/game/ws/check', apply=[websocket])
 @authorize(mondb)  # 认证对ws同样有效,因为ws要先http握手
@@ -238,15 +239,8 @@ def post_upload_image():
     md5 = str(random.randint(0, 10000))
     return json.dumps({'code':0, 'md5':md5, 'image':settings['API']['root'] + suffix, 'thumb':''})
 
-@app.route('/static/img/<filename>', method='GET')
+@app.route('/static/:path#(images|css|js|fonts)\/.+#', method='GET')
 @authorize(mondb)
-def serve_img(filename):
-    p = os.path.join(HOME_DIR, 'static/img')
-    return bottle.static_file(filename, root=p)
-
-@app.route('/static/js/<filename>', method='GET')
-@authorize(mondb)
-def serve_js(filename):
-    p = os.path.join(HOME_DIR, 'static/js')
-    return bottle.static_file(filename, root=p)
-
+def server_static(path):
+    p = os.path.join(HOME_DIR, 'static')
+    return bottle.static_file(path, root=p)
