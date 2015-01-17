@@ -239,7 +239,7 @@ def post_upload_image():
     md5 = str(random.randint(0, 10000))
     return json.dumps({'code':0, 'md5':md5, 'image':settings['API']['root'] + suffix, 'thumb':''})
 
-@app.route('/static/:path#(images|css|js|fonts)\/.+#', method='GET')
+@app.route('/static/:path#(img|css|js|fonts)\/.+#', method='GET')
 @authorize(mondb)
 def server_static(path):
     p = os.path.join(HOME_DIR, 'static')
