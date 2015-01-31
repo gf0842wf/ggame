@@ -1,3 +1,0 @@
-gevent
-mprpc
-git+https://github.com/esnme/ultramysql.git
