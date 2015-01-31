@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 '''参照 twisted/asyncio重新设计下api
-: 和dbprotocol/rpcprotocol的factory不同, 这里 reconnect_delay不作为__init__参数,而是通过重载时更改
 '''
 
 import gevent.monkey; gevent.monkey.patch_socket()
@@ -41,21 +40,25 @@ class FactoryException(Exception):
 
 
 class Protocol(gevent.Greenlet):
-
+    
+    id_generator = id_generator()
+    
     recv_buf_size = 256
     read_deadline = 0  # 心跳超时: 0-不超时
     
-    id_generator = id_generator()
     transport = None
+    session_id = None
+    
     glet_recver = None
     glet_sender = None
-    sendq = gevent.queue.Queue()  # 发送消息队列
-    
     inner_glets = {}  # 生命周期在protocol协程之前的协程放在这里
+    
+    sendq = gevent.queue.Queue()  # 发送消息队列
     
     def __init__(self, transport, addr):
         self.transport = transport
         self.addr = addr
+        
         gevent.Greenlet.__init__(self)
         
     def add_inner_glet(self, name, glet):
@@ -63,7 +66,7 @@ class Protocol(gevent.Greenlet):
         return glet
         
     def get_inner_glet(self, name):
-        return self.inner_glets.get(name, None)
+        return self.inner_glets.get(name)
     
     def remove_inner_glet(self, name):
         return self.inner_glets.pop(name, None)
@@ -72,7 +75,6 @@ class Protocol(gevent.Greenlet):
         self.make_connection(self.transport)
     
     def make_connection(self, transport):
-        self.connected = True
         self.session_id = self.id_generator.next()
         self.transport = transport
         
@@ -198,6 +200,7 @@ class TCPServerFactory(gevent.Greenlet):
     
     def __init__(self, addr):
         self.addr = addr
+        
         gevent.Greenlet.__init__(self)
         
     def on_notify(self, *args, **kwargs):
@@ -229,6 +232,7 @@ class ReconnectingClientFactory(gevent.Greenlet):
     
     def __init__(self, addr):
         self.addr = addr
+        
         gevent.Greenlet.__init__(self)
         
     def on_notify(self, *args, **kwargs):
@@ -323,6 +327,7 @@ class WSGIServerFactory(gevent.Greenlet):
         self.addr = addr
         self.app = app or self._app
         self.handler_class = handler_class
+        
         gevent.Greenlet.__init__(self)
         
     def on_notify(self, *args, **kwargs):
