@@ -38,6 +38,6 @@ class Singleton2(object):
     '''
     def __new__(cls, *args, **kw):
         if not hasattr(cls, '_instance'): 
-            cls._instance = super(Singleton, cls).__new__(cls, *args, **kw) # 调用父类的__new__方法生成实例
+            cls._instance = super(Singleton, cls).__new__(cls, *args, **kw)  # 调用父类的__new__方法生成实例
             
         return cls._instance

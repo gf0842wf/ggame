@@ -57,7 +57,7 @@ class TrieCheck(object):
             node = node.get_child(ch)
             while node is not None:
                 if node.is_end():
-                    yield (i, ''.join(text[i:index+1]))
+                    yield (i, ''.join(text[i:index + 1]))
                 if len(text) == index + 1:
                     break
                 index += 1

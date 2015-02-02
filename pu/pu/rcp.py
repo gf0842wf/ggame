@@ -108,7 +108,7 @@ def decode(lst):
     elif message_type == ERROR:
         message = Error(*args)
     else:
-        raise DecodeError('解码失败: %r' % lst)
+        raise DecodeError('decode error: %r' % lst)
 
     return message
 
@@ -123,7 +123,7 @@ def encode(message):
     elif isinstance(message, Error):
         lst = [ERROR]
     else:
-        raise EncodeError('编码失败: %r' % message)
+        raise EncodeError('encode error: %r' % message)
 
     lst.extend(message)
 
