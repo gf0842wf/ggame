@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''所有客户端统一管理(db,rpc等)'''
+"""所有客户端统一管理(db,rpc等)"""
 
 from copy import deepcopy
 from gnet.client import Client

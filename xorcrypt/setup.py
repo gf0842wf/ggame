@@ -3,9 +3,9 @@
 from distutils.core import setup, Extension
  
 __version__ = "0.1.0"
- 
+
 macros = [('MODULE_VERSION', '"%s"' % __version__)]
- 
+
 setup(name="xorcrypt",
       version=__version__,
       author="fk",

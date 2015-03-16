@@ -14,7 +14,7 @@ import gsocketpool.pool
 #     def call(self, method, *args):
 #         with self.mprpcpool.connection() as client:
 #             return client.call(method, *args)
-        
+
 
 client = Client()
 

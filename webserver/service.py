@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-'''所有服务器统一管理'''
+"""所有服务器统一管理"""
 from gnet.service import Service
 from .web import WebServerFactory
 from .settings import settings

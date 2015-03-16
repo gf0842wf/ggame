@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from path import init_path;init_path()
+from _path import init_path; init_path()
 from gevent import monkey; monkey.patch_all()
 import argparse
 import gevent
 import os
 import logging
 
-from rpcserver.settings import settings
-from rpcserver.path import HOME_DIR
+from settings import settings
+from _path import HOME_DIR
 
 
 # 分析参数
@@ -31,26 +31,32 @@ ARGS.add_argument(
 
 ARGS = ARGS.parse_args()
 
+
 def initialize():
     # 加载配置文件
     settings.load(os.path.join(HOME_DIR, ARGS.settings))
-    
+
     loglevel = logging._checkLevel(ARGS.loglevel)
-    
+
     # 日志配置
     log_format = '[%(asctime)-15s %(levelname)s:%(name)s:%(module)s] %(message)s'
     logging.basicConfig(level=loglevel, format=log_format)
 
+
 def run():
     # 先启动(导入)client,后启动service
     from gateserver.client import client
+
     client.start()
     from rpcserver.service import root
+
     root.start()
-    
+
+
 def main():
     initialize()
     run()
+
 
 main()
 

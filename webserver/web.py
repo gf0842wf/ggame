@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class WebServerFactory(WSGIServerFactory):
-
     def __init__(self, addr):
         self.addr = addr
         super(WebServerFactory, self).__init__(addr, app, handler_class=HookLogWSHandler)
